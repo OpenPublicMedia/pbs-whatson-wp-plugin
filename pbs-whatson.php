@@ -54,8 +54,9 @@ define( 'PBS_WHATSON_WEB_URL',      $the_web_url );
 define( 'PBS_WHATSON_NAME',         $pluginName );
 define( 'PBS_WHATSON_S_NAME',       $pluginShortName );
 define( 'PBS_WHATSON_DEFAULT_EMAIL',$the_default_email );
-define( 'PBS_WHATSON_VERSION', '1.0.0' );
-define( 'PBS_WHATSON_PREFIX' , "pbswo_");
+define( 'PBS_WHATSON_VERSION', 		'1.0.0' );
+define( 'PBS_WHATSON_PREFIX' , 		'pbswo_');
+define( 'PBS_WHATSON_DATA_ERROR',	'' );
 
 /** 
  * include the necessary files for the plugin
@@ -105,38 +106,9 @@ function pbs_whatson_getlistings () {
 }
 
 function pbs_whatson_error_handling($dataErrorType) {
-	echo 'dataErrorType is ' . $dataErrorType . '<br/><br/>';
+//	echo 'dataErrorType is ' . $dataErrorType . '<br/><br/>';
+//	PBS_WHATSON_DATA_ERROR = $dataErrorType;
 }
-
-function pbs_whatson_widget_display() {
-	global $programAirdates;
-	if (count($programAirdates) != 0) {
-		foreach ($programAirdates['upcoming_episodes'] as $upe) {
-			if ($upe['feed']['digital_channel']) {
-				echo '<b>PBS Station:</b> '.$upe['feed']['airing_station'].'<br/>';
-				echo '<b>Time:</b> '.$upe['airdate'].' '.$upe['airtime'].' ('.$upe['airTimezone'].')<br/>';
-				if ($upe['episode_title'] != '') {
-					echo '<b>Episode Title:</b> '.$upe['episode_title'].'<br/>';
-				} else {
-					echo '<b>Episode Title:</b> No Available Title<br/>';
-			
-				}
-				if ($upe['episode_description'] != '') {
-					echo '<b>Episode Description:</b>'.$upe['episode_description'].'<br/>';
-				} else {
-					echo '<b>Episode Description:</b> No Available Description<br/>';
-				}
-				echo('<b>Duration:</b> '.$upe['minutes'].' minutes<br/><br/>');
-	//			echo('Broadcast on <b>'.$upe['feed']['full_name'].'</b><br/>');
-	//			echo('Channel:</b> '.$upe['feed']['digital_channel'].'<br/><br/>');
-			}
-		}
-		unset($upe);
-	} else {
-		echo 'No episodes are airing on your local stations';	
-	}
-}
-
 
 function pbs_whatson_localize_viewer () {
 	$sodor = new PBSSodorAPI();
