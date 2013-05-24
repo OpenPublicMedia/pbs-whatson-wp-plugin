@@ -46,7 +46,7 @@ $programAirdates = Array();
 /**
  * Define Globals
  **/
-define( 'PBS_WHATSON_FRONT_URL', $plugin_loc);
+define( 'PBS_WHATSON_FRONT_URL', 	$plugin_loc);
 define( 'PBS_WHATSON_URL',          plugin_dir_url(__FILE__) );
 define( 'PBS_WHATSON_PATH',         plugin_dir_path(__FILE__) );
 define( 'PBS_WHATSON_BASENAME',     plugin_basename( __FILE__ ) );
@@ -67,22 +67,38 @@ require_once(PBSWHATSON_PATH.'lib/pbs-whatson-settings.php');
 require_once(PBSWHATSON_PATH.'lib/pbs-whatson-admin-class.php');
 require_once(PBSWHATSON_PATH.'lib/pbs-whatson-widget-class.php');
 
-
 /** set the options that are stored from the admin page */
 $options = get_option('pbs_whatson_settings');
 $api_key = $options['api_key'];
 $cache_ttl = $options['cache_ttl'];
 $default_program = $options['default_program'];
 $test_station = $options['test_station'];
-
+$test_zipcode = $options['test_zipcode'];
+$test_ipaddress = $options['test_ipaddress'];
+$show_zipcode_field = $options['show_zipcode_field'];
 
 function pbs_whatson_getlistings () {
-	global $api_key, $default_program, $test_station;
+	global $api_key, $default_program, $test_station, $test_zipcode, $test_ipaddress;
     $sodor = new PBSSodorAPI($api_key);
-	$myZIP = $sodor->getZipByIP();
+	
+//	echo 'test_ipaddress '.$test_ipaddress.'<br/>';
+//	echo 'test_zipcode '.$test_zipcode.'<br/>';
 
-	if ($myZIP) {
+	if ($test_zipcode == '' || $test_ipaddress == '') {
+//		echo 'test_zipcode and test_ipaddress are empty, getting zip from sodor->getZipByIP<br/>';
+		$myZip = $sodor->getZipByIP();
+	} elseif ($test_ipaddress != '') {
+//		echo 'test_ipaddress is empty, getting IP getIPAddress<br/>';
+		$myIP = $sodor->getIPAddress();
+//		echo'myIP is '.$myIP.'<br/>';
+		$sodor->setUserZipCode($test_zipcode);
+		$myZip = $sodor->userZipCode;
+	}
+
+	/** now that ZIP is set, lets find the stations for the ZIP and getAirdates */
+	if ($myZip) {
 		$myStations = $sodor->getStationList();
+
 		if (count($myStations > 0)) {
 			$programAirdates = $sodor->getProgramAirdates(TRUE);
 			if (count($programAirdates) > 0) {
@@ -141,7 +157,7 @@ function pbs_whatson_housekeeping () {
     }
 
     $sodor = new PBSSodorAPI($api_key);
-	//
+	// 
 
 
     $json = $requestor->make_request($request_url);
@@ -159,8 +175,23 @@ function pbs_whatson_housekeeping () {
     $cache_stat = set_site_transient($transient_key, $data, $cache_ttl);
 
     return $data;
-
 }
 
+
+/**
+ * 
+ * 
+ * 
+ * 
+ * @return array - internal links to program/episode/chapter pages
+ */
+function pbs_whatson_getprogramlinks() {
+	$filename = PBSWHATSON_PATH.'lib/assets/data/episodes.inc';
+	if(is_file($filename)) {
+		return include $filename;
+	} else {
+		return false;
+	}
+}
 	
 ?>

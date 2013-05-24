@@ -86,6 +86,7 @@ class PBSSodorAPI
 	 * @return string $userIP (that has been validated or set to 0.0.0.0)
 	 */
 	protected function setIPAddress() {
+//		echo '<strong>setIPAddress called</strong><br/>';
 		if (isSet($_SERVER)) {
 			if (isSet($_SERVER["HTTP_X_FORWARDED_FOR"])) {
 				$this->userIP = $_SERVER["HTTP_X_FORWARDED_FOR"];
@@ -104,7 +105,8 @@ class PBSSodorAPI
 			}
 		}
 		if ($this->validateIPAddress($this->userIP)) {
-			return $this;
+//			echo '<strong>this is '.$this->userIP.'</strong><br/>';
+			return $this->userIP;
 		} else {
 			$this->userIP = "0.0.0.0";
 		}
@@ -117,6 +119,7 @@ class PBSSodorAPI
 	 * @return string userIP
 	 */
 	public function getIPAddress() {
+//		echo '<strong>getIPAddress called</strong><br/>';
 		if(!$this->userIP) {
 			$this->setIPAddress();
 		}
@@ -145,7 +148,7 @@ class PBSSodorAPI
 			$this->userZipCode = $this->objZipCode->{'$items'}[0]->zipcode;
 			$this->zipToStationURL = $this->objZipCode->{'$items'}[0]->{'$links'}[0]->{'$self'};
 		}
-		$this->userZipCode = 94598;
+//		$this->userZipCode = 94598;
 		return $this->userZipCode;
 	}
 
@@ -182,21 +185,23 @@ class PBSSodorAPI
 	 * @return Array of station objects based on ZIP code
 	 */
 	protected function setStationsByZip() {
+
 		$this->zipToStationURL = $this->apiURL.'callsigns/zip/'.$this->userZipCode.'.json';
 		if (isset($this->zipToStationURL)) {
 			$data = $this->makeCURLRequest($this->zipToStationURL, TRUE);
 		} else {
 			$data = $this->makeCURLRequest($requestURL, TRUE);
 		}
-
 		if (is_object($data) && strtolower($data->{'$elements'}) == 'callsign2zipmapping') {
 			$this->objStationsArray = $data;
 		} else {
 			/** TODO -- add better error handling */
-			echo 'there is a problem with the station objects array<br/><br/>';
+			if ($_GET['debug']) {
+				echo 'there is a problem with the station objects array<br/><br/>';
+			}
 		}
 		/** this->objStationsArray should now be set and available for use */
-//		$this->debugArray($this->objStationsArray, 'Station Object Array');
+//		$this->debugArray($this->objStationsArray, 'Station Object Array (setStationsByZIP)');
 	}
 
 	/**
@@ -216,7 +221,7 @@ class PBSSodorAPI
 
 /** --------------------------------------------------------------------------------------- */
 	/**
-	* protected function getStationList
+	* protected function 
 	* 
 	* parses the stationList that is returned 
 	* 
@@ -225,6 +230,7 @@ class PBSSodorAPI
 	*/
 	protected function setStationList() {
 		global $test_station;
+
 		/** if test station is set, create this->stationList */
 		if ($test_station) {
 			$stationArray = Array('flagship'=>strtoupper($test_station),'confidence'=>'100','rank'=>'1','short_common_name'=>strtoupper($test_station));
@@ -234,51 +240,54 @@ class PBSSodorAPI
 		}
 
 		if (!$this->objStationsArray) {
-			$this->setStationsByZip();
+			$this->getStationsByZip();
 		}
 		// TODO: need additional error handling here in case the array is empty
-		foreach ($this->objStationsArray->{'$items'} as $callsign_map) {
-			$callsign = $callsign_map->{'$links'}[0];
-			$owner_station = $callsign->{'$links'}[0];		
-			$owner_station_callsign = '';
-			foreach($owner_station->{'$links'} as $rel) {
-				if ($rel->{'$relationship'} == 'flagship') {
-					$owner_station_callsign = $rel->{'callsign'};
-				}
-				if ($owner_station_callsign != '') {
-					// Check to see if we've seen this station before
-					if (array_key_exists($owner_station_callsign, $this->stationList)) {
-						// we have seen this station before so reprocess it
-						$station = $this->stationList[$owner_station_callsign];
-						// Check to see if we've moved up the ranking
-						if ($callsign_map->{'rank'} != '' && $station['rank'] > $callsign_map->{'rank'}) {
-							// this callsign has a lower (better) ranking so use it
-							$station['rank'] = $callsign_map['rank'];
-						}
-						if ($callsign_map->{'confidence'} != '' && $station['confidence'] < $callsign_map->{'confidence'}) {
-							// this callsign has a higher (better) confidence so use it
+		if (count($this->objStationsArray->{'$items'}) != 0) {
+			foreach ($this->objStationsArray->{'$items'} as $callsign_map) {
+				$callsign = $callsign_map->{'$links'}[0];
+				$owner_station = $callsign->{'$links'}[0];		
+				$owner_station_callsign = '';
+				foreach($owner_station->{'$links'} as $rel) {
+					if ($rel->{'$relationship'} == 'flagship') {
+						$owner_station_callsign = $rel->{'callsign'};
+					}
+					if ($owner_station_callsign != '') {
+						// Check to see if we've seen this station before
+						if (array_key_exists($owner_station_callsign, $this->stationList)) {
+							// we have seen this station before so reprocess it
+							$station = $this->stationList[$owner_station_callsign];
+							// Check to see if we've moved up the ranking
+							if ($callsign_map->{'rank'} != '' && $station['rank'] > $callsign_map->{'rank'}) {
+								// this callsign has a lower (better) ranking so use it
+								$station['rank'] = $callsign_map['rank'];
+							}
+							if ($callsign_map->{'confidence'} != '' && $station['confidence'] < $callsign_map->{'confidence'}) {
+								// this callsign has a higher (better) confidence so use it
+								$station['confidence'] = $callsign_map->{'confidence'};
+							}
+							// add this callsign to the existing list for this owner station
+							$station['callsigns'][]  = $callsign->{'callsign'};
+							$this->stationList[$owner_station_callsign] = $station;
+						} else {
+							// create a new station entry and add it to the stations list
+							$station = Array();
+							$station['flagship'] = $owner_station_callsign;
 							$station['confidence'] = $callsign_map->{'confidence'};
+							$station['rank'] = $callsign_map->{'rank'};
+							$station['short_common_name'] = $owner_station->{'short_common_name'};
+							// get SODOR station ID from URL
+							$station['id'] = $this->getIDFromURL($owner_station->{'$self'});
+							$station['callsigns'][] = $callsign->{'callsign'};
+							$this->stationList[$owner_station_callsign] = $station;
 						}
-						// add this callsign to the existing list for this owner station
-						$station['callsigns'][]  = $callsign->{'callsign'};
-						$this->stationList[$owner_station_callsign] = $station;
-					} else {
-						// create a new station entry and add it to the stations list
-						$station = Array();
-						$station['flagship'] = $owner_station_callsign;
-						$station['confidence'] = $callsign_map->{'confidence'};
-						$station['rank'] = $callsign_map->{'rank'};
-						$station['short_common_name'] = $owner_station->{'short_common_name'};
-						// get SODOR station ID from URL
-						$station['id'] = $this->getIDFromURL($owner_station->{'$self'});
-						$station['callsigns'][] = $callsign->{'callsign'};
-						$this->stationList[$owner_station_callsign] = $station;
 					}
 				}
+				unset($rel);
 			}
-			unset($rel);
+			unset($callsign_map);
 		}
-		unset($callsign_map);
+		return $this->stationList;
 	}
 	/**
 	 * public function getStationList
@@ -297,7 +306,7 @@ class PBSSodorAPI
 	 */	
 	 public function getStationList() {
 		if (!$this->stationList) {
-			$this->setStationList();
+			$this->stationList = $this->setStationList();
 		}
 		return $this->stationList;
 	}
@@ -322,21 +331,24 @@ class PBSSodorAPI
 		$this->defaultProgram = $default_program;
 		
 		$listingCount = 0;
-		foreach($this->stationList as $station) {
-			$this->rawAirdatesData = $this->getAirdatesData($station['flagship'], $this->defaultProgram);
-			if ($this->rawAirdatesData['upcoming_episodes'][0] != '') {
-				$this->airdatesData = $this->formatAirdatesData($this->rawAirdatesData, $station['flagship']);
-			}
-			if ($bDisplayAirdates) {
-				if ($listingCount > 0) {
-					$this->displayAirdates($station['flagship'], $this->prettyAirdatesData, FALSE);
-				} else {
-					$this->displayAirdates($station['flagship'], $this->prettyAirdatesData);
+
+		if (count($this->stationList) > 0) {
+			foreach($this->stationList as $station) {
+				$this->rawAirdatesData = $this->getAirdatesData($station['flagship'], $this->defaultProgram);
+				if ($this->rawAirdatesData['upcoming_episodes'][0] != '') {
+					$this->airdatesData = $this->formatAirdatesData($this->rawAirdatesData, $station['flagship']);
 				}
+				if ($bDisplayAirdates) {
+					if ($listingCount > 0) {
+						$this->displayAirdates($station['flagship'], $this->prettyAirdatesData, FALSE);
+					} else {
+						$this->displayAirdates($station['flagship'], $this->prettyAirdatesData);
+					}
+				}
+				$listingCount++;
 			}
-			$listingCount++;
+			unset($station);		
 		}
-		unset($station);		
 	}
 
 
@@ -377,7 +389,7 @@ class PBSSodorAPI
 
 	public function sortAirdates($sortCriteria="date") {
 		$airdatesUnSorted = $this->airdatesData;
-//		echo 'herhehreher';
+
 //		for each ($airdatesUnSorted['upcoming_episodes'] as $x) {
 		for ($x=0; $x < count($airdatesUnSorted['upcoming_episodes']); $x++) {
 //			$this->debugArray($airdatesUnSorted['upcoming_episodes'][$x], 'unsorted episodes');

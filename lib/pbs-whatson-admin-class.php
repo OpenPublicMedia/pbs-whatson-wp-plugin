@@ -2,22 +2,38 @@
 
 function pbs_whatson_admin_display () {
 
-    global $default_program, $api_key, $test_station;
+    global $default_program, $api_key, $test_station, $test_zipcode, $test_ipaddress;
 	$stationList = array();
 		
 	$sodor = new PBSSodorAPI($api_key);
 
-	if ('' == $test_station) {
-		$myIP = $sodor->getIPAddress();
-		$myZIP = $sodor->getZipByIP();
-		echo 'IP is '.$myIP.'<br/>';
-		echo 'ZIP is '.$myZIP.'<br/>';
+	/** get the admin's IP address **/
+	$myIP = $sodor->getIPAddress();
+	echo 'Your IP is '.$myIP.'<br/><br/>';
+	/** check and see if an admin user is testing by verifying the test IP matches the user's IP **/
+	if ($test_zipcode != '' && $test_ipaddress == $myIP) {
+		echo 'Using Test ZIP: '.$test_zipcode.'<br/>';
+		$sodor->setUserZipCode($test_zipcode);
+		/** verify that userZipCode has been set properly */
+		$myZip = $sodor->userZipCode;
+	} else {
+		$myZip = $sodor->getZipByIP();
+	}
+	if ($myZip !='') {
+		echo 'Detected ZIP is '.$myZip.'<br/><br/>';
+	} else {
+		if ($test_ipaddress != '' && $test_ipaddress != $myIP) {
+			echo 'Test IP Address does not match your IP address<br/>';
+		} else {
+			echo 'Unable to determine ZIP based on IP<br/>';
+		}
 	}
 	$myStations = $sodor->getStationList();
+
 	$programAirdates = $sodor->getProgramAirdates(TRUE);
 	$sodor->closeCURL();
 	
-	if ($test_station) {
+	if ($test_station != '' && $test_ipaddress == $myIP) {
 		echo 'Test station: '.strtoupper($test_station).'<br/><br/>';
 	} else {
 		foreach ($myStations as $station) {
@@ -49,7 +65,7 @@ function pbs_whatson_admin_display () {
 		}
 		unset($upe);
 	} else {
-		echo 'No episodes are airing on your local stations';	
+		echo 'No episodes are airing in your area';	
 	}
 }
 

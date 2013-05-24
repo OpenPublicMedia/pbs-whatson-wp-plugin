@@ -5,7 +5,6 @@
 
 add_action('admin_init', 'pbs_whatson_options_init' );
 add_action('admin_menu', 'pbs_whatson_options_add_page');
-
 /**
 * Init plugin options to white list our options
 *
@@ -20,8 +19,10 @@ function pbs_whatson_options_init(){
 
 // Add menu page
 function pbs_whatson_options_add_page() {
+    global $whatson_settings;
+    
     if (current_user_can('manage_options')) {
-		add_options_page('PBS Whats\'s On Options', 'PBS What\'s On', 'manage_options', 'pbs-whatson-options', 'pbs_whatson_options_page');
+		$whatson_settings = add_options_page('PBS Whats\'s On Options', 'PBS What\'s On', 'manage_options', 'pbs-whatson-options', 'pbs_whatson_options_page');
     }
 }
 
@@ -59,9 +60,20 @@ function pbs_whatson_options_page() {
 					<p>The PBS SODOR Program ID to use by default when requesting airdates and times.</p>
 					</td>
 				</tr>
-				<tr valign="top"><th scope="row">Test Station</th>
-					<td><input name="pbs_whatson_settings[test_station]" type="text" size="10" value="<?php echo $options['test_station']; ?>" />
-					<p>Entering a Test Station allows you to see what airdates are available for other stations within the system</p>
+				<tr valign="top"><th scope="row">Test IP Address</th>
+					<td><input name="pbs_whatson_settings[test_ipaddress]" type="text" size="10" value="<?php echo $options['test_ipaddress']; ?>" />
+					<p>In order to use the 'Test Station' or 'Test ZIP' functionality, you must enter your IP address here</p>
+					</td>
+				</tr>
+<!-- test station was here -->
+				<tr valign="top"><th scope="row">Test ZIP</th>
+					<td><input name="pbs_whatson_settings[test_zipcode]" type="text" size="10" value="<?php echo $options['test_zipcode']; ?>" />
+					<p>Entering a Test ZIP code allows you to see what airdates are available for regions within the U.S.</p>
+					</td>
+				</tr>
+				<tr valign="top"><th scope="row">Show ZIP Code Field</th>
+					<td><input name="pbs_whatson_settings[show_zipcode_field]" type="text" size="10" value="<?php echo $options['show_zipcode_field']; ?>" />
+					<p>Enter TRUE to show the ZIP code field. This is largely a testing field for when we introduce the ZIP code field</p>
 					</td>
 				</tr>
 			</table>
@@ -86,5 +98,16 @@ function pbs_whatson_options_page() {
 <?php
 
 }
+/*
+function pbs_whatson_options_load_scripts($hook) {
+	global $whatson_settings;
+	if ($hook != $whatson_settings) {
+		return;
+	}
+	wp_enqueue_script('pbswo-ajax', 'http://crenshawed.com/wp-content/plugins/pbs-whatson-wp-plugin/lib/assets/js/pbs-whatson.js', array('jQuery'));
+
+}
+add_action('admin_enqueue_scripts', 'pbs_whatson_options_load_scripts');
+*/
 
 ?>
