@@ -71,6 +71,7 @@ var_dump($programAirdates);
 		}
 		unset($upe);
 	} else {
+//todo - make these lines templatized so that implementation determines the default display
 ?>
 			<ul id="whatson">
 				<li><a href="http://www.kqed.org/tv/programs/index.jsp?pgmid=21385"  target="_blank">Get KQED broadcast listings.</a></li>
