@@ -98,16 +98,5 @@ function pbs_whatson_options_page() {
 <?php
 
 }
-/*
-function pbs_whatson_options_load_scripts($hook) {
-	global $whatson_settings;
-	if ($hook != $whatson_settings) {
-		return;
-	}
-	wp_enqueue_script('pbswo-ajax', 'http://crenshawed.com/wp-content/plugins/pbs-whatson-wp-plugin/lib/assets/js/pbs-whatson.js', array('jQuery'));
-
-}
-add_action('admin_enqueue_scripts', 'pbs_whatson_options_load_scripts');
-*/
 
 ?>
