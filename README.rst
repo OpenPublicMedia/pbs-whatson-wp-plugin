@@ -1,30 +1,28 @@
 =========================
-COVE API WordPress Plugin
+PBS What's On WordPress Plugin
 =========================
 
 Description:
 ============
-This plugin allows you to retrieve program and video metadata from version 1 of the COVE API. The plugin handles the authentication of requests using values maintained in the WordPress Admin. Results are cached using the WordPress Transients API.
-
-The plugin uses the COVE_API_Request php class provided by Edgar Roman of PBS for making requests to the api. 
+This plugin allows you to add air dates and times to your blog for a single program. The plugin autodetects the IP of the site visitor and displays the applicable time and date for their local station.
 
 Installation:
 =============
-1. Upload the cove-api.zip file to the /wp-content/plugins directory and unzip
+1. Checkout this repository to your wp-content/plugins directory
 2. Activate the plugin from the Plugins menu in your admin menu
-3. Configure the plugin by going to the COVE API Options menu item that appears in your admin menu
-4. After activating the plugin, enter the API Key and Secret, the Cache TTL time, and any defaults in the COVE API Options screen.
+3. Configure the plugin by going to the PBS What's On Options menu item that appears in your admin 'Settings' menu
+4. After activating the plugin, enter you TVSchedules v2 API Key (this plugin does not work with the v1 key)
 
 Links: 
 ======
-`COVE API V1`_
+`PBS TV Schedules API V2`_
 
 `PBS Q&A Site`_
 
 Requirements:
 =============
 * Requires at least: WordPress 3.1.3
-* Tested up to: WordPress 3.2.1
+* Tested up to: WordPress 3.5.1
 * Stable tag: 1.0
 
 Frequently Asked Questions:
@@ -33,41 +31,47 @@ Visit the `PBS Q&A Site`_ for frequently asked questions
 
 Screenshots:
 ============
-1. Option Page
-2. Dashboard Widget
+Need to be updated
 
 Changelog:
 ==========
 :Version 1.0: Initial external release
 
+To Do:
+=============
+* Update default view when no stations are found to remove KQED specific URLs
+* Add ZIP code lookup to the widget
+* Add screenshots to the plugin repo
+* Better error handling
+* Improved documentation on field variables
+
 Other Notes:
 =============
-* W3TC users, if using the dashboard widget be sure that Object Cache is enabled and that "Don't cache WordPress Admin" is unchecked.
-* Tags: api, dashboard, video
+* Tags: api, dashboard, tvschedules, sodor, pbs
 
 Initial Contributors:
 =====================
-* WNET
+* Thomas Crenshaw (thomas AT crenshawed DOT com) - KQED and `Crenshawed Solutions`_ (`thomascrenshaw`_)
 
-  - Eric Knappe
-* `PBS (GitHub)`_
-
-  - Edgar Roman (`edgarroman`_)
-
-  - Angel Ramboi (`limpangel`_)
+* `PBS Bluebell Project`_
   
-  
-.. _COVE API V1: 
-    https://projects.pbs.org/confluence/display/coveapi/COVE+API+Version+1
+.. _PBS TV Schedules API V2: 
+    https://projects.pbs.org/confluence/display/tvsapi/TV+Schedules+Version+2
+    
+.. _PBS Locator localization API v1:
+    https://projects.pbs.org/confluence/display/localization/Locator
     
 .. _PBS Q&A Site:
     http://open.pbs.org/answers/
     
-.. _PBS (GitHub):
-    https://github.com/organizations/pbs
+.. _PBS Bluebell Project:
+    https://github.com/pbs/bluebell
     
-.. _edgarroman:
-    https://github.com/edgarroman
+.. _Crenshawed Solutions:
+    http://crenshawed.com/
 
-.. _limpangel:
-    https://github.com/limpangel
+.. _thomascrenshaw:
+    https://github.com/thomascrenshaw
+
+.. _openpublicmedia:
+    https://github.com/organizations/openpublicmedia
